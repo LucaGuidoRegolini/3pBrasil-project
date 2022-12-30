@@ -1,11 +1,10 @@
 {
   "scripts": {
-    "start:dev": "ts-node-dev -r tsconfig-paths/register --inspect -T --ignore-watch node_modules --respawn src/shared/infra/server.ts",
-    "start:prod": "APP_ENV=production node dist/shared/infra/server.js",
+    "start:dev": "ts-node-dev -r tsconfig-paths/register --inspect -T --ignore-watch node_modules --respawn src/shared/cmd/server.ts",
+    "start:prod": "node dist/shared/cmd/server.js",
     "test": "APP_ENV=test npx jest -i --coverage --detectOpenHandles",
     "typeorm": "ts-node-dev -r tsconfig-paths/register node_modules/typeorm/cli.js",
-    "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files",
-    "build-proto": "sh src/shared/infra/grpc/proto/build.sh"
+    "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",

@@ -4,7 +4,7 @@ ormconfig.json
 
 .env
 
-dist/**
+dist
 
 package-lock.json
 
@@ -20,12 +20,13 @@ temp/*
 
 !/temp/uploads/.gitkeep
 
-/.docker/**
+.docker/**
 
-!/.docker/nginx/
-!/.docker/nginx/**
-!/.docker/entrypoit.prod.sh
-!/.docker/entrypoit.dev.sh
+!.docker/nginx/
+!.docker/nginx/**
+!.docker/entrypoit.prod.sh
+!.docker/entrypoit.dev.sh
+!.docker/entrypoit.sh
 core
 run.ts
 *.csv

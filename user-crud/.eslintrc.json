@@ -17,8 +17,16 @@
   },
   "plugins": ["@typescript-eslint", "eslint-plugin-import-helpers", "prettier"],
   "rules": {
-    "no-param-reassign": "off",
-    "prettier/prettier": "error",
+    "max-classes-per-file": ["error", 20],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "if",
+        "printWidth": 200,
+        "singleQuote": true,
+        "trailingComma": "all"
+      }
+    ],
     "camelcase": "off",
     "import/no-unresolved": "error",
     "@typescript-eslint/naming-convention": [
@@ -34,6 +42,7 @@
     ],
     "class-methods-use-this": "off",
     "import/prefer-default-export": "off",
+    "no-underscore-dangle": "off",
     "no-shadow": "off",
     // "no-console": "off",
     "no-useless-constructor": "off",

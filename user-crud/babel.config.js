@@ -1,5 +1,8 @@
 module.exports = {
-  presets: [["@babel/preset-env", { targets: { node: "current" } }], "@babel/preset-typescript"],
+  presets: [
+    ["@babel/preset-env", { targets: { node: "current" } }],
+    "@babel/preset-typescript",
+  ],
   plugins: [
     [
       "module-resolver",
@@ -8,7 +11,7 @@ module.exports = {
           "@modules": "./src/modules",
           "@shared": "./src/shared",
           "@configs": "./src/configs",
-          "@lib": "./src/lib",
+          "@infra": "./src/infra",
         },
       },
     ],
