@@ -11,9 +11,9 @@ module.exports = [
     username: process.env.POSTGRES_USERNAME || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'docker',
     entities: [`${baseFolder}/modules/**/entities/*${extensions}`],
-    migrations: ['./src/shared/infra/database/migrations/*.ts'],
+    migrations: ['./src/infra/database/migrations/*.ts'],
     cli: {
-      migrationsDir: './src/shared/infra/database/migrations/',
+      migrationsDir: './src/infra/database/migrations/',
     },
   },
 ];
