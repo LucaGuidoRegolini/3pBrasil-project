@@ -1,5 +1,5 @@
-const baseFolder = process.env.APP_ENV === 'production' ? './dist' : './src';
-const extensions = process.env.APP_ENV === 'production' ? '.js' : '.ts';
+const baseFolder = process.env.APP_ENVIRONMENT === 'PROD' ? './dist' : './src';
+const extensions = process.env.APP_ENVIRONMENT === 'PROD' ? '.js' : '.ts';
 
 module.exports = [
   {

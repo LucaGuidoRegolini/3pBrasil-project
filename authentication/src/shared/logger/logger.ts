@@ -7,7 +7,7 @@ export class Logger {
   public static init(): void {
     this.logger = winston.createLogger({
       format: winston.format.json(),
-      defaultMeta: { service: 'user-service' },
+      defaultMeta: { service: 'authentication-service' },
       transports: [
         new winston.transports.File(options.error),
         new winston.transports.File(options.file),

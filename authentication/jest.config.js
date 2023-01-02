@@ -1,16 +1,17 @@
-const { pathsToModuleNameMapper } = require("ts-jest/utils");
+const { pathsToModuleNameMapper } = require('ts-jest/utils');
 
 module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   moduleNameMapper: pathsToModuleNameMapper(
     {
-      "@modules/*": ["modules/*"],
-      "@config/*": ["config/*"],
-      "@shared/*": ["shared/*"],
-      "@utils/*": ["utils/*"],
+      '@modules/*': ['modules/*'],
+      '@config/*': ['config/*'],
+      '@shared/*': ['shared/*'],
+      '@infra/*': ['infra/*'],
+      '@main/*': ['main/*'],
     },
-    { prefix: "<rootDir>/src" }
+    { prefix: '<rootDir>/src' },
   ),
   coverageThreshold: {
     global: {
@@ -23,14 +24,14 @@ module.exports = {
   bail: true,
   clearMocks: true,
   collectCoverageFrom: [
-    "<rootDir>/src/modules/**/services/*.ts",
-    "!<rootDir>/src/modules/investmentStocks/services/ListStockInfoService.ts",
-    "!<rootDir>/src/modules/investmentStocks/services/ListHistoryBySectorService.ts",
+    '<rootDir>/src/modules/**/services/*.ts',
+    '!<rootDir>/src/modules/investmentStocks/services/ListStockInfoService.ts',
+    '!<rootDir>/src/modules/investmentStocks/services/ListHistoryBySectorService.ts',
   ],
-  coverageDirectory: "coverage",
-  coverageProvider: "v8",
-  coverageReporters: ["text-summary", "lcov", "clover"],
-  setupFiles: ["./jest-setup-file.ts"],
-  testMatch: ["**/*.spec.ts"],
-  setupFiles: ["dotenv/config", "reflect-metadata"],
+  coverageDirectory: 'coverage',
+  coverageProvider: 'v8',
+  coverageReporters: ['text-summary', 'lcov', 'clover'],
+  setupFiles: ['./jest-setup-file.ts'],
+  testMatch: ['**/*.spec.ts'],
+  setupFiles: ['dotenv/config', 'reflect-metadata'],
 };
