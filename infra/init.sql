@@ -1,0 +1,3 @@
+CREATE DATABASE "konga_db";
+
+CREATE DATABASE "kong_db";

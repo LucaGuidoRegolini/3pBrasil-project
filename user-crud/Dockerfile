@@ -28,10 +28,6 @@ RUN npm install
 COPY . .
 COPY ./.docker/entrypoint.sh  /usr/app/entrypoint.sh
 
-RUN npm run build
-
-RUN rm -rf src
-
 EXPOSE $APP_PORT
 
 CMD [ "sh","/usr/app/entrypoint.sh" ]
