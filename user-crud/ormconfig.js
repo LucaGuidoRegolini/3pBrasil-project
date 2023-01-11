@@ -1,5 +1,5 @@
-const baseFolder = process.env.APP_ENV === 'production' ? './dist' : './src';
-const extensions = process.env.APP_ENV === 'production' ? '.js' : '.ts';
+const baseFolder = process.env.APP_ENVIRONMENT == 'PROD' ? './dist' : './src';
+const extensions = process.env.APP_ENVIRONMENT == 'PROD' ? '.js' : '.ts';
 
 module.exports = [
   {
@@ -11,9 +11,9 @@ module.exports = [
     username: process.env.POSTGRES_USERNAME || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'docker',
     entities: [`${baseFolder}/modules/**/entities/*${extensions}`],
-    migrations: ['./src/shared/infra/database/migrations/*.ts'],
+    migrations: ['./src/infra/database/migrations/*.ts'],
     cli: {
-      migrationsDir: './src/shared/infra/database/migrations/',
+      migrationsDir: './src/infra/database/migrations/',
     },
   },
 ];

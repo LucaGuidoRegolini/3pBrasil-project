@@ -48,6 +48,18 @@ export class BadRequestError extends AppError {
   }
 }
 
+export class UnauthorizedError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'UnauthorizedError',
+      message,
+      status: 401,
+      type: 'UNAUTHORIZED_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message: string) {
     super({
@@ -55,6 +67,42 @@ export class NotFoundError extends AppError {
       message,
       status: 404,
       type: 'NOT_FOUND_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class DuplicateError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'DuplicateError',
+      message,
+      status: 409,
+      type: 'DUPLICATE_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class ConcurrencyError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'ConcurrencyError',
+      message,
+      status: 409,
+      type: 'CONCURRENCY_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class InternalServerError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'InternalServerError',
+      message,
+      status: 500,
+      type: 'INTERNAL_SERVER_ERROR',
     });
     Object.setPrototypeOf(this, new.target.prototype);
   }

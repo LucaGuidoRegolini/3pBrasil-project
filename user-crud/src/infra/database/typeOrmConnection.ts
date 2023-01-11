@@ -5,9 +5,11 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 export class TypeOrmConnection {
   private static connection: Connection;
 
-  private constructor() {}
+  public static getConnection(): Connection {
+    return TypeOrmConnection.connection;
+  }
 
-  public static async getConnection(): Promise<Connection> {
+  public static async buildConnection(): Promise<Connection> {
     Logger.info('📗 Connecting to database...');
 
     try {
@@ -27,7 +29,7 @@ export class TypeOrmConnection {
     return TypeOrmConnection.connection;
   }
 
-  public static async getTestConnection(): Promise<Connection> {
+  public static async buildTestConnection(): Promise<Connection> {
     if (!TypeOrmConnection.connection) {
       const postgresConnectionOptions =
         (await getConnectionOptions()) as PostgresConnectionOptions;

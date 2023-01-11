@@ -1,15 +1,14 @@
-import { Repository, getRepository } from 'typeorm';
-import { UserRepositoryInterface } from './userRepository.interface';
+import { getRepository, Repository } from 'typeorm';
+import { CreateUserInterface, UserRepositoryInterface } from './userRepository.interface';
 import { User } from '../entities/user';
+import { Either, SuccessfulResponse, left, right } from '@shared/either';
+import { ConcurrencyError, InternalServerError } from '@shared/errors';
 import {
   IndexRequestInterface,
   IndexResponseInterface,
   ListRequestInterface,
   ListResponseInterface,
 } from '@shared/repository/repository.interface';
-import { Either, SuccessfulResponse, left, right } from '@shared/either';
-import { ConcurrencyError, InternalServerError, NotFoundError } from '@shared/errors';
-import { TypeOrmConnection } from '@infra/database/typeOrmConnection';
 
 export class UserRepository implements UserRepositoryInterface {
   private ormRepository: Repository<User>;
@@ -27,25 +26,28 @@ export class UserRepository implements UserRepositoryInterface {
     return UserRepository.instance;
   }
 
-  async create(item: User): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  public async create(
+    item: CreateUserInterface,
+  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
     try {
       await this.ormRepository.save(item);
     } catch (error: any) {
       const message = error?.message || 'Internal Server Error';
       return left(new InternalServerError(message));
     }
+
     return right(new SuccessfulResponse(item));
   }
 
-  async update(
+  public async update(
     id: string,
     item: Partial<User>,
     retry = 0,
-  ): Promise<Either<NotFoundError | ConcurrencyError, SuccessfulResponse>> {
+  ): Promise<Either<InternalServerError | ConcurrencyError, SuccessfulResponse>> {
     try {
       const resp = await this.ormRepository.findOne(id);
 
-      if (!resp) return left(new NotFoundError('User not found'));
+      if (!resp) return left(new InternalServerError('User not found'));
 
       item.version = resp.version + 1;
 
@@ -63,7 +65,7 @@ export class UserRepository implements UserRepositoryInterface {
           return this.update(id, item, retry - 1);
         }
 
-        return left(new ConcurrencyError('User has been updated'));
+        return left(new ConcurrencyError('Concurrency Error'));
       }
 
       return right(new SuccessfulResponse(item));
@@ -73,12 +75,13 @@ export class UserRepository implements UserRepositoryInterface {
     }
   }
 
-  async delete(
+  public async delete(
     id: string,
-  ): Promise<Either<NotFoundError | InternalServerError, SuccessfulResponse>> {
+  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
     try {
       const resp = await this.ormRepository.delete(id);
-      if (!resp.affected) return left(new NotFoundError('User not found'));
+
+      if (!resp.affected) return left(new InternalServerError('User not found'));
 
       return right(new SuccessfulResponse({ id }));
     } catch (error: any) {
@@ -87,7 +90,7 @@ export class UserRepository implements UserRepositoryInterface {
     }
   }
 
-  async findOne(filter: Partial<User>): Promise<User | undefined> {
+  public async findOne(filter: Partial<User>): Promise<User | undefined> {
     const user = await this.ormRepository.createQueryBuilder().where(filter).getOne();
 
     return user;

@@ -1,12 +1,17 @@
-import { authenticationServiceFactory } from '@main/authenticationService.factory';
 import { Request, Response } from 'express';
+import { AuthenticationService } from '../services/AuthenticateUserService';
 
 export class AuthenticateUserController {
+  private authenticationService: AuthenticationService;
+
+  constructor(authenticationService: AuthenticationService) {
+    this.authenticationService = authenticationService;
+  }
+
   public async handle(request: Request, response: Response) {
     const { email, password } = request.body;
 
-    const authenticationService = authenticationServiceFactory();
-    const resp = await authenticationService.execute({ email, password });
+    const resp = await this.authenticationService.execute({ email, password });
 
     if (resp.isLeft()) {
       throw resp.value;

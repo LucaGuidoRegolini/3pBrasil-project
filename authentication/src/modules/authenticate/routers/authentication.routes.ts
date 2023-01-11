@@ -4,7 +4,9 @@ import { authenticationServiceFactory } from '@main/authenticationService.factor
 
 const authenticationRoutes = Router();
 
-const authenticateUserController = new AuthenticateUserController();
+const authenticateUserController = new AuthenticateUserController(
+  authenticationServiceFactory(),
+);
 
 authenticationRoutes.post('/', authenticateUserController.handle);
 

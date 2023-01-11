@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { app_environment } from '@configs/appConfig';
+import { app_environment as app_environment_env } from '@configs/environment_variable';
 import { Logger } from './logger';
 import { AppError } from '@shared/errors';
 import { CelebrateError, errors } from 'celebrate';
 
-const environment = process.env.APP_ENVIRONMENT || 'DEV';
+const environment = app_environment_env || 'DEV';
 export class HttpLogger {
   static expressRequestLogger(req: Request, res: Response, next: NextFunction) {
     if (environment === app_environment.production) {

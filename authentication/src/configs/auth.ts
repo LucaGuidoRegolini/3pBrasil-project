@@ -1,5 +1,6 @@
+import { jwt_secret as jwt_secret_env } from '@configs/environment_variable';
+
 export const authConfig = {
-  saltOrRounds: 10,
-  jwt_secret: process.env.JWT_SECRET || 'secret',
+  jwt_secret: jwt_secret_env || 'secret',
   jwt_expiresIn: '1d',
 };
