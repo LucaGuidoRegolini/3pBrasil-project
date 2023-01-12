@@ -1,5 +1,5 @@
 import { Repository, getRepository } from 'typeorm';
-import { UserRepositoryInterface } from './userRepository.interface';
+import { CreateUserInterface, UserRepositoryInterface } from './userRepository.interface';
 import { User } from '../entities/user';
 import {
   IndexRequestInterface,
@@ -26,9 +26,16 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
     return UserRepositoryInMemory.instance;
   }
 
-  async create(item: User): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  async create(
+    item: CreateUserInterface,
+  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
     try {
-      this.userArray.push(item);
+      this.userArray.push({
+        ...item,
+        version: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
     } catch (error: any) {
       const message = error?.message || 'Internal Server Error';
       return left(new InternalServerError(message));

@@ -2,6 +2,8 @@ import { Either, left, right } from '@shared/either';
 import { UserRepositoryInterface } from '../repositories/userRepository.interface';
 import { DuplicateError } from '@shared/errors';
 import { HashGeneration } from '@shared/hashGeneration.ts/hashGenaration';
+import { QueueInterface } from '@infra/queue/queueInterface';
+import { kafka_topic_modify_user } from '@configs/environment_variable';
 
 interface CreateRequestInterface {
   name: string;
@@ -23,13 +25,21 @@ interface CreateResponseInterface {
 
 export class CreateUserService {
   private usersRepository: UserRepositoryInterface;
+  private queueAdapter: QueueInterface;
 
-  private constructor(usersRepository: UserRepositoryInterface) {
+  private constructor(
+    usersRepository: UserRepositoryInterface,
+    queueAdapter: QueueInterface,
+  ) {
     this.usersRepository = usersRepository;
+    this.queueAdapter = queueAdapter;
   }
 
-  public static build(usersRepository: UserRepositoryInterface): CreateUserService {
-    return new CreateUserService(usersRepository);
+  public static build(
+    usersRepository: UserRepositoryInterface,
+    queueAdapter: QueueInterface,
+  ): CreateUserService {
+    return new CreateUserService(usersRepository, queueAdapter);
   }
 
   async execute({
@@ -61,10 +71,27 @@ export class CreateUserService {
       password: passwordHash,
     };
 
-    const resp = await this.usersRepository.create(neWUer);
+    const repository_resp = await this.usersRepository.create(neWUer);
 
-    if (resp.isLeft()) {
-      return left(resp.value);
+    if (repository_resp.isLeft()) {
+      return left(repository_resp.value);
+    }
+
+    await this.queueAdapter.addEvent(
+      kafka_topic_modify_user,
+      JSON.stringify({
+        email,
+        passwordHash,
+        type,
+        version: 1,
+      }),
+    );
+
+    const queue_resp = await this.queueAdapter.publishEvent(kafka_topic_modify_user, 3);
+
+    if (queue_resp.isLeft()) {
+      this.usersRepository.delete(id);
+      return left(queue_resp.value);
     }
 
     return right(neWUer);

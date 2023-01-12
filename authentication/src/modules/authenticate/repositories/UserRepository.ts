@@ -1,5 +1,5 @@
 import { Repository, getRepository } from 'typeorm';
-import { UserRepositoryInterface } from './userRepository.interface';
+import { CreateUserInterface, UserRepositoryInterface } from './userRepository.interface';
 import { User } from '../entities/user';
 import {
   IndexRequestInterface,
@@ -27,7 +27,9 @@ export class UserRepository implements UserRepositoryInterface {
     return UserRepository.instance;
   }
 
-  async create(item: User): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  async create(
+    item: CreateUserInterface,
+  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
     try {
       await this.ormRepository.save(item);
     } catch (error: any) {

@@ -48,6 +48,18 @@ export class BadRequestError extends AppError {
   }
 }
 
+export class MissingRequestError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'MissingRequestError',
+      message,
+      status: 400,
+      type: 'MISSING_REQUEST_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class UnauthorizedError extends AppError {
   constructor(message: string) {
     super({

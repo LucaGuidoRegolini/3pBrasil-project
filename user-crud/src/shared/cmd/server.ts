@@ -5,10 +5,13 @@ import { Logger } from '@shared/logger/logger';
 import { TypeOrmConnection } from '@infra/database/typeOrmConnection';
 import { express_port_default } from '@configs/express';
 import { app_port } from '@configs/environment_variable';
+import { KafkaAdapter } from '@infra/queue/KafkaAdapter';
 
 (async () => {
   Logger.init();
   Logger.info('✅ Server started');
+
+  KafkaAdapter.build();
 
   TypeOrmConnection.buildConnection().then(() => {
     const express_port = Number(app_port) || express_port_default;

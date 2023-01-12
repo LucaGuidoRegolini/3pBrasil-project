@@ -19,6 +19,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: authentication
       JWT_SECRET: test
+      KAFKA_BROKER: kafka:9092
     networks:
       - 3pbrasil-net
     ports:
@@ -39,6 +40,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+      JWT_SECRET: test
+      KAFKA_BROKER: kafka:9092
     networks:
       - 3pbrasil-net
     ports:
