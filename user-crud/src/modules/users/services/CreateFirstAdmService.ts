@@ -1,10 +1,10 @@
-import { Either, left, right } from '@shared/either';
-import { UserRepositoryInterface } from '../repositories/userRepository.interface';
-import { BadRequestError, DuplicateError } from '@shared/errors';
-import { HashGeneration } from '@shared/hashGeneration.ts/hashGenaration';
 import { QueueInterface } from '@infra/queue/queueInterface';
+import { UserRepositoryInterface } from '../repositories/userRepository.interface';
+import { Either, left, right } from '@shared/either';
+import { DuplicateError, UnauthorizedError } from '@shared/errors';
+import { HashGeneration } from '@shared/hashGeneration.ts/hashGenaration';
+import { userTypes } from '@configs/user_types';
 import { kafka_topic_modify_user } from '@configs/environment_variable';
-import { isUserType } from '@configs/user_types';
 
 interface CreateRequestInterface {
   name: string;
@@ -12,7 +12,6 @@ interface CreateRequestInterface {
   password: string;
   cpf: string;
   phone: string;
-  type: string;
 }
 
 interface CreateResponseInterface {
@@ -24,7 +23,7 @@ interface CreateResponseInterface {
   type: string;
 }
 
-export class CreateUserService {
+export class CreateFirstAdmService {
   private usersRepository: UserRepositoryInterface;
   private queueAdapter: QueueInterface;
 
@@ -39,8 +38,8 @@ export class CreateUserService {
   public static build(
     usersRepository: UserRepositoryInterface,
     queueAdapter: QueueInterface,
-  ): CreateUserService {
-    return new CreateUserService(usersRepository, queueAdapter);
+  ): CreateFirstAdmService {
+    return new CreateFirstAdmService(usersRepository, queueAdapter);
   }
 
   async execute({
@@ -49,36 +48,32 @@ export class CreateUserService {
     password,
     cpf,
     phone,
-    type,
   }: CreateRequestInterface): Promise<
-    Either<DuplicateError | BadRequestError, CreateResponseInterface>
+    Either<UnauthorizedError, CreateResponseInterface>
   > {
-    const userAlreadyExists = await this.usersRepository.findOne({
-      email: email,
+    const anyUserAlreadyExists = await this.usersRepository.list({
+      page: 1,
+      limit: 1,
     });
 
-    if (userAlreadyExists) {
-      return left(new DuplicateError('User already exists'));
-    }
-
-    if (!isUserType(type)) {
-      return left(new BadRequestError('User type is invalid'));
+    if (anyUserAlreadyExists.total > 0) {
+      return left(new UnauthorizedError('First adm already exists'));
     }
 
     const id = HashGeneration.generateUUID();
     const passwordHash = await HashGeneration.generateHash(password);
 
-    const neWUer = {
+    const newUser = {
       id,
       name,
       email,
-      type,
-      phone,
-      cpf,
       password: passwordHash,
+      cpf,
+      phone,
+      type: userTypes.ADMIN,
     };
 
-    const repository_resp = await this.usersRepository.create(neWUer);
+    const repository_resp = await this.usersRepository.create(newUser);
 
     if (repository_resp.isLeft()) {
       return left(repository_resp.value);
@@ -89,7 +84,7 @@ export class CreateUserService {
       JSON.stringify({
         email,
         passwordHash,
-        type,
+        type: userTypes.ADMIN,
         version: 1,
       }),
     );
@@ -101,6 +96,6 @@ export class CreateUserService {
       return left(queue_resp.value);
     }
 
-    return right(neWUer);
+    return right(newUser);
   }
 }

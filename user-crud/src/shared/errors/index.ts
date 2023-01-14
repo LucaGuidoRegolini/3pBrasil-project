@@ -96,6 +96,18 @@ export class ConcurrencyError extends AppError {
   }
 }
 
+export class MissingRequestError extends AppError {
+  constructor(message: string) {
+    super({
+      name: 'MissingRequestError',
+      message,
+      status: 400,
+      type: 'MISSING_REQUEST_ERROR',
+    });
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class InternalServerError extends AppError {
   constructor(message: string) {
     super({

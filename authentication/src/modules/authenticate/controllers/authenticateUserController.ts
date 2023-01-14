@@ -6,6 +6,7 @@ import {
 import { WebController } from '@shared/http/WebController';
 import { Either, left, right } from '@shared/either';
 import { AppError } from '@shared/errors';
+import { HttpResponse } from '@shared/http/httpResponse';
 
 export class AuthenticateUserController extends WebController {
   private authenticationService: AuthenticationService;
@@ -29,12 +30,9 @@ export class AuthenticateUserController extends WebController {
     const resp = await this.authenticationService.execute({ email, password });
 
     if (resp.isLeft()) {
-      throw resp.value;
+      return left(resp.value);
     }
 
-    return right({
-      statusCode: 200,
-      body: resp.value,
-    });
+    return right(HttpResponse.ok(resp.value));
   }
 }

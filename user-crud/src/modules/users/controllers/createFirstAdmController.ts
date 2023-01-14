@@ -1,39 +1,38 @@
+import { Either, left, right } from '@shared/either';
+import { AppError } from '@shared/errors';
 import { WebController } from '@shared/http/WebController';
-import { CreateUserService } from '../services/CreateUserService';
 import {
   HttpRequestInterface,
   HttpResponseInterface,
 } from '@shared/http/WebControllerInterface';
-import { Either, left, right } from '@shared/either';
-import { AppError } from '@shared/errors';
 import { HttpResponse } from '@shared/http/httpResponse';
+import { CreateFirstAdmService } from '../services/CreateFirstAdmService';
 
-export class CreateUserController extends WebController {
-  private createUserService: CreateUserService;
+export class CreateFirstAdmController extends WebController {
+  private createFirstAdmService: CreateFirstAdmService;
 
-  constructor(createUserService: CreateUserService) {
+  constructor(createFirstAdmService: CreateFirstAdmService) {
     super();
-    this.createUserService = createUserService;
+    this.createFirstAdmService = createFirstAdmService;
   }
 
   public async handle(
     request: HttpRequestInterface,
   ): Promise<Either<AppError, HttpResponseInterface>> {
-    const { name, email, password, cpf, phone, type } = request.body;
+    const { name, email, password, cpf, phone } = request.body;
 
     const validation = this.validateParams(request, {
-      body: ['name', 'email', 'password', 'cpf', 'phone', 'type'],
+      body: ['name', 'email', 'password', 'cpf', 'phone'],
     });
 
     if (validation.isLeft()) return left(validation.value);
 
-    const resp = await this.createUserService.execute({
+    const resp = await this.createFirstAdmService.execute({
       name,
       email,
       password,
       cpf,
       phone,
-      type,
     });
 
     if (resp.isLeft()) {
