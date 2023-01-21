@@ -46,7 +46,7 @@ export class KafkaAdapter implements QueueInterface {
   async publishEvent(
     event: string,
     retry = 0,
-  ): Promise<Either<NotFoundError | BadRequestError, SuccessfulResponse>> {
+  ): Promise<Either<NotFoundError | BadRequestError, SuccessfulResponse<string>>> {
     await this.producer.connect();
 
     if (!this.events[event]) return left(new NotFoundError('Event not found'));

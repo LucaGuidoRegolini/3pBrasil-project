@@ -28,7 +28,7 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
 
   async create(
     item: CreateUserInterface,
-  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  ): Promise<Either<InternalServerError, SuccessfulResponse<CreateUserInterface>>> {
     try {
       this.userArray.push({
         ...item,
@@ -47,7 +47,9 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
     id: string,
     item: Partial<User>,
     retry = 0,
-  ): Promise<Either<NotFoundError | ConcurrencyError, SuccessfulResponse>> {
+  ): Promise<
+    Either<NotFoundError | ConcurrencyError, SuccessfulResponse<Partial<User>>>
+  > {
     const resp = this.userArray.find((user) => user.id === id);
 
     if (!resp) return left(new NotFoundError('User not found'));
@@ -74,7 +76,7 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
 
   async delete(
     id: string,
-  ): Promise<Either<NotFoundError | InternalServerError, SuccessfulResponse>> {
+  ): Promise<Either<NotFoundError | InternalServerError, SuccessfulResponse<any>>> {
     try {
       const resp = this.userArray.find((user) => user.id === id);
 
@@ -91,13 +93,17 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
     }
   }
 
-  async findOne(filter: Partial<User>): Promise<User | undefined> {
+  async findOne(
+    filter: Partial<User>,
+  ): Promise<Either<InternalServerError, SuccessfulResponse<User | undefined>>> {
     const user = this.userArray.find((user) => user[String(filter)] === filter);
 
-    return user;
+    return right(new SuccessfulResponse(user));
   }
 
-  async index(data: IndexRequestInterface<User>): Promise<IndexResponseInterface<User>> {
+  async index(
+    data: IndexRequestInterface<User>,
+  ): Promise<Either<InternalServerError, IndexResponseInterface<User>>> {
     const { filter, order, orderBy } = data;
 
     const orderType = order === 'descending' ? 'DESC' : 'ASC';
@@ -119,10 +125,12 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
         return 0;
       });
 
-    return { data: users, ...data };
+    return right({ data: users, ...data });
   }
 
-  async list(data: ListRequestInterface<User>): Promise<ListResponseInterface<User>> {
+  async list(
+    data: ListRequestInterface<User>,
+  ): Promise<Either<InternalServerError, ListResponseInterface<User>>> {
     const { filter, order, orderBy, page = 1, limit = 10 } = data;
 
     const orderType = order === 'descending' ? 'DESC' : 'ASC';
@@ -147,12 +155,12 @@ export class UserRepositoryInMemory implements UserRepositoryInterface {
     const users = usersTotal.slice((page - 1) * limit, limit);
     const total = usersTotal.length;
 
-    return {
+    return right({
       data: users,
       total,
       page,
       limit,
       ...data,
-    };
+    });
   }
 }

@@ -2,7 +2,7 @@ import { getRepository, Repository } from 'typeorm';
 import { CreateUserInterface, UserRepositoryInterface } from './userRepository.interface';
 import { User } from '../entities/user';
 import { Either, SuccessfulResponse, left, right } from '@shared/either';
-import { ConcurrencyError, InternalServerError } from '@shared/errors';
+import { AppError, ConcurrencyError, InternalServerError } from '@shared/errors';
 import {
   IndexRequestInterface,
   IndexResponseInterface,
@@ -28,7 +28,7 @@ export class UserRepository implements UserRepositoryInterface {
 
   public async create(
     item: CreateUserInterface,
-  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  ): Promise<Either<InternalServerError, SuccessfulResponse<CreateUserInterface>>> {
     try {
       await this.ormRepository.save(item);
     } catch (error: any) {
@@ -43,7 +43,9 @@ export class UserRepository implements UserRepositoryInterface {
     id: string,
     item: Partial<User>,
     retry = 0,
-  ): Promise<Either<InternalServerError | ConcurrencyError, SuccessfulResponse>> {
+  ): Promise<
+    Either<InternalServerError | ConcurrencyError, SuccessfulResponse<Partial<User>>>
+  > {
     try {
       const resp = await this.ormRepository.findOne(id);
 
@@ -77,7 +79,7 @@ export class UserRepository implements UserRepositoryInterface {
 
   public async delete(
     id: string,
-  ): Promise<Either<InternalServerError, SuccessfulResponse>> {
+  ): Promise<Either<InternalServerError, SuccessfulResponse<any>>> {
     try {
       const resp = await this.ormRepository.delete(id);
 
@@ -90,57 +92,80 @@ export class UserRepository implements UserRepositoryInterface {
     }
   }
 
-  public async findOne(filter: Partial<User>): Promise<User | undefined> {
-    const user = await this.ormRepository.createQueryBuilder().where(filter).getOne();
+  public async findOne(
+    filter: Partial<User>,
+  ): Promise<Either<InternalServerError, SuccessfulResponse<User | undefined>>> {
+    try {
+      const user = await this.ormRepository.createQueryBuilder().where(filter).getOne();
 
-    return user;
+      return right(new SuccessfulResponse(user));
+    } catch (error: any) {
+      const message = error?.message || 'Internal Server Error';
+      return left(new InternalServerError(message));
+    }
   }
 
-  async index(data: IndexRequestInterface<User>): Promise<IndexResponseInterface<User>> {
-    const { filter, order, orderBy } = data;
+  async index(
+    data: IndexRequestInterface<User>,
+  ): Promise<Either<InternalServerError, IndexResponseInterface<User>>> {
+    try {
+      const { filter, order, orderBy } = data;
 
-    const orderType = order === 'descending' ? 'DESC' : 'ASC';
+      const orderType = order === 'descending' ? 'DESC' : 'ASC';
 
-    const query = this.ormRepository
-      .createQueryBuilder()
-      .orderBy(`user.${orderBy}`, orderType);
+      const query = this.ormRepository
+        .createQueryBuilder()
+        .orderBy(`user.${orderBy}`, orderType);
 
-    if (filter) {
-      query.where(filter);
+      if (filter) {
+        query.where(filter);
+      }
+
+      const users = await query.getMany();
+
+      return right({ data: users, ...data });
+    } catch (error: any) {
+      const message = error?.message || 'Internal Server Error';
+      return left(new InternalServerError(message));
     }
-
-    const users = await query.getMany();
-
-    return { data: users, ...data };
   }
 
-  async list(data: ListRequestInterface<User>): Promise<ListResponseInterface<User>> {
-    const { filter, order, orderBy, page = 1, limit = 10 } = data;
+  async list(
+    data: ListRequestInterface<User>,
+  ): Promise<Either<InternalServerError, ListResponseInterface<User>>> {
+    try {
+      const { filter, order, orderBy, page = 1, limit = 10 } = data;
 
-    const orderType = order === 'descending' ? 'DESC' : 'ASC';
+      const orderType = order === 'descending' ? 'DESC' : 'ASC';
 
-    const query = this.ormRepository
-      .createQueryBuilder()
-      .orderBy(`user.${orderBy}`, orderType);
+      const query = this.ormRepository
+        .createQueryBuilder()
+        .orderBy(`user.${orderBy}`, orderType);
 
-    if (filter) {
-      query.where(filter);
+      if (filter) {
+        Object.keys(filter).forEach((key) => {
+          query.andWhere(`user.${key} LIKE %:value%`, { value: filter[key] });
+        });
+      }
+
+      const cloneQuery = query.clone();
+
+      query.skip((page - 1) * limit).take(limit);
+
+      const users = await query.getMany();
+
+      const total = await cloneQuery.getCount();
+
+      return right({
+        data: users,
+        total,
+        page,
+        limit,
+        ...data,
+      });
+    } catch (error: any) {
+      const message = error?.message || 'Internal Server Error';
+      return left(new InternalServerError(message));
     }
-
-    const cloneQuery = query.clone();
-
-    query.skip((page - 1) * limit).take(limit);
-
-    const users = await query.getMany();
-
-    const total = await cloneQuery.getCount();
-
-    return {
-      data: users,
-      total,
-      page,
-      limit,
-      ...data,
-    };
   }
 }

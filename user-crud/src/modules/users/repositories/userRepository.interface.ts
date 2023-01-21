@@ -14,5 +14,7 @@ export interface CreateUserInterface {
 }
 
 export interface UserRepositoryInterface extends RepositoryInterface<User> {
-  create(item: CreateUserInterface): Promise<Either<AppError, SuccessfulResponse>>;
+  create(
+    item: CreateUserInterface,
+  ): Promise<Either<AppError, SuccessfulResponse<CreateUserInterface>>>;
 }

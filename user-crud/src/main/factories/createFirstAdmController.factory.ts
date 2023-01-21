@@ -3,6 +3,13 @@ import { CreateFirstAdmController } from '@modules/users/controllers/createFirst
 import { UserRepository } from '@modules/users/repositories/UserRepository';
 import { CreateFirstAdmService } from '@modules/users/services/CreateFirstAdmService';
 
+export const createFirstAdmServiceFactory = (): CreateFirstAdmService => {
+  return CreateFirstAdmService.build(
+    UserRepository.getInstance(),
+    KafkaAdapter.getInstance(),
+  );
+};
+
 export const createFirstAdmControllerFactory = (): CreateFirstAdmController => {
   const createFirstAdmService = CreateFirstAdmService.build(
     UserRepository.getInstance(),

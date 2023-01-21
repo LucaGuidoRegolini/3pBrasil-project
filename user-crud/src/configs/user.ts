@@ -6,3 +6,5 @@ export const userTypes = {
 export const isUserType = (type: string): boolean => {
   return Object.values(userTypes).includes(type);
 };
+
+export const list_user_limit = 50;

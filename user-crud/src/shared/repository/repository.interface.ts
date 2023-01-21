@@ -37,7 +37,7 @@ export interface RepositoryInterface<T> {
    * @description Creates a new record in the database
    * @param item record to be created
    */
-  create(item: T): Promise<Either<AppError, SuccessfulResponse>>;
+  create(item: T): Promise<Either<AppError, SuccessfulResponse<any>>>;
 
   /**
    * @description Updates a record in the database
@@ -49,19 +49,21 @@ export interface RepositoryInterface<T> {
     id: string,
     item: Partial<T>,
     retry?: number,
-  ): Promise<Either<AppError, SuccessfulResponse>>;
+  ): Promise<Either<AppError, SuccessfulResponse<Partial<T>>>>;
 
   /**
    * @description Deletes a record in the database
    * @param id record id
    */
-  delete(id: string): Promise<Either<AppError, SuccessfulResponse>>;
+  delete(id: string): Promise<Either<AppError, SuccessfulResponse<string>>>;
 
   /**
    * @description Finds a record in the database
    * @param filter record params to be found
    */
-  findOne(filter: Partial<T>): Promise<T | undefined>;
+  findOne(
+    filter: Partial<T>,
+  ): Promise<Either<AppError, SuccessfulResponse<T | undefined>>>;
 
   /**
    * @description Finds all record in the database
@@ -69,7 +71,10 @@ export interface RepositoryInterface<T> {
    * @param order record order
    * @param orderBy record order by
    */
-  index(data: IndexRequestInterface<T>): Promise<IndexResponseInterface<T>>;
+
+  index(
+    data: IndexRequestInterface<T>,
+  ): Promise<Either<AppError, IndexResponseInterface<T>>>;
 
   /**
    * @description Finds a limited number of records in the database
@@ -79,5 +84,7 @@ export interface RepositoryInterface<T> {
    * @param order order of the records
    * @param orderBy order by
    */
-  list(data: ListRequestInterface<T>): Promise<ListResponseInterface<T>>;
+  list(
+    data: ListRequestInterface<T>,
+  ): Promise<Either<AppError, ListResponseInterface<T>>>;
 }

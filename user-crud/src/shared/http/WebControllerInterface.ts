@@ -13,18 +13,32 @@ export interface HttpResponseInterface {
   body: any;
 }
 
+type ParamType = 'string' | 'number' | 'boolean';
+export interface ParamProps {
+  required?: boolean;
+  type?: ParamType;
+  default?: any;
+  valid?: any[];
+  label?: string;
+}
+
+export interface RequestProps {
+  [key: string]: ParamProps;
+}
+
 export interface HttpParamsInterface {
-  body?: string[];
-  params?: string[];
-  query?: string[];
-  headers?: string[];
+  extra_params?: boolean;
+  body?: RequestProps;
+  params?: RequestProps;
+  query?: RequestProps;
+  headers?: RequestProps;
 }
 
 export interface WebControllerInterface {
   handle(request: HttpRequestInterface): Promise<Either<AppError, HttpResponseInterface>>;
 
-  validateParams(
+  validateRequest(
     request: HttpRequestInterface,
     requireParams: HttpParamsInterface,
-  ): Either<AppError, SuccessfulResponse>;
+  ): Either<AppError, SuccessfulResponse<string>>;
 }

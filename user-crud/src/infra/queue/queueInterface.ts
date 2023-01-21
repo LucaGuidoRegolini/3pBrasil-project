@@ -6,6 +6,6 @@ export interface QueueInterface {
   publishEvent(
     event: string,
     retry?: number,
-  ): Promise<Either<AppError, SuccessfulResponse>>;
+  ): Promise<Either<AppError, SuccessfulResponse<string>>>;
   consumeEvent(event: string, callback: (message: string) => void): Promise<void>;
 }

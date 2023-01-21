@@ -5,9 +5,8 @@ export interface Either<L, R> {
   isRight(): this is Right<L, R>;
   isLeft(): this is Left<L, R>;
 
-  map<B>(f: (r: R) => B): Either<L, B>;
+  map<B>(f: (r: R) => B): B;
 }
-
 class Right<L, R> implements Either<L, R> {
   readonly _tag = 'Right';
   constructor(readonly value: R) {}
@@ -20,8 +19,8 @@ class Right<L, R> implements Either<L, R> {
     return false;
   }
 
-  map<B>(f: (r: R) => B): Either<L, B> {
-    return new Right(f(this.value));
+  map<B>(f: (r: R) => B): B {
+    return f(this.value);
   }
 }
 
@@ -37,14 +36,14 @@ class Left<L, R> implements Either<L, R> {
     return true;
   }
 
-  map<B>(f: (r: R) => B): Either<L, B> {
-    return new Left(this.value);
+  map<B>(f: (r: R) => B): B {
+    return this.value as any;
   }
 }
 
-export class SuccessfulResponse {
+export class SuccessfulResponse<T> {
   readonly isSuccessful = true;
-  constructor(readonly value: any) {}
+  constructor(readonly value: T) {}
 }
 
 export const right = <L, R>(value: R): Either<L, R> => new Right(value);

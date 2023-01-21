@@ -4,7 +4,7 @@ import { BadRequestError, DuplicateError } from '@shared/errors';
 import { HashGeneration } from '@shared/hashGeneration.ts/hashGenaration';
 import { QueueInterface } from '@infra/queue/queueInterface';
 import { kafka_topic_modify_user } from '@configs/environment_variable';
-import { isUserType } from '@configs/user_types';
+import { isUserType } from '@configs/user';
 
 interface CreateRequestInterface {
   name: string;
@@ -53,9 +53,15 @@ export class CreateUserService {
   }: CreateRequestInterface): Promise<
     Either<DuplicateError | BadRequestError, CreateResponseInterface>
   > {
-    const userAlreadyExists = await this.usersRepository.findOne({
+    const resp = await this.usersRepository.findOne({
       email: email,
     });
+
+    if (resp.isLeft()) {
+      return left(resp.value);
+    }
+
+    const userAlreadyExists = resp.map((resp) => resp.value);
 
     if (userAlreadyExists) {
       return left(new DuplicateError('User already exists'));

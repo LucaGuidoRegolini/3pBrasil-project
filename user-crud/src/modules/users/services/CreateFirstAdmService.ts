@@ -1,9 +1,9 @@
 import { QueueInterface } from '@infra/queue/queueInterface';
 import { UserRepositoryInterface } from '../repositories/userRepository.interface';
 import { Either, left, right } from '@shared/either';
-import { DuplicateError, UnauthorizedError } from '@shared/errors';
+import { AppError, DuplicateError, UnauthorizedError } from '@shared/errors';
 import { HashGeneration } from '@shared/hashGeneration.ts/hashGenaration';
-import { userTypes } from '@configs/user_types';
+import { userTypes } from '@configs/user';
 import { kafka_topic_modify_user } from '@configs/environment_variable';
 
 interface CreateRequestInterface {
@@ -51,10 +51,16 @@ export class CreateFirstAdmService {
   }: CreateRequestInterface): Promise<
     Either<UnauthorizedError, CreateResponseInterface>
   > {
-    const anyUserAlreadyExists = await this.usersRepository.list({
+    const resp = await this.usersRepository.list({
       page: 1,
       limit: 1,
     });
+
+    if (resp.isLeft()) {
+      return left(resp.value);
+    }
+
+    const anyUserAlreadyExists = resp.map((resp) => resp);
 
     if (anyUserAlreadyExists.total > 0) {
       return left(new UnauthorizedError('First adm already exists'));

@@ -1,50 +1,158 @@
-import { AppError, InternalServerError, MissingRequestError } from '@shared/errors';
+import {
+  AppError,
+  BadRequestError,
+  InternalServerError,
+  MissingRequestError,
+} from '@shared/errors';
 import {
   HttpParamsInterface,
   HttpRequestInterface,
   HttpResponseInterface,
+  RequestProps,
   WebControllerInterface,
 } from './WebControllerInterface';
 import { Either, SuccessfulResponse, left, right } from '@shared/either';
 
+interface validationResponseInterface {
+  missingParams: string[];
+  typeError: string[];
+  validValues: string[];
+}
 export abstract class WebController implements WebControllerInterface {
   async handle(
     request: HttpRequestInterface,
   ): Promise<Either<AppError, HttpResponseInterface>> {
     return left(new InternalServerError('Method not implemented'));
   }
-  validateParams(
+  validateRequest(
     request: HttpRequestInterface,
     requireParams: HttpParamsInterface,
-  ): Either<AppError, SuccessfulResponse> {
-    const missingParams: string[] = [];
+  ): Either<BadRequestError | MissingRequestError, SuccessfulResponse<string>> {
+    const { extra_params = true } = requireParams;
 
-    requireParams.body?.forEach((param) => {
+    const extraParams = this.extraParams(request, requireParams, extra_params);
+
+    if (extraParams.isLeft()) return extraParams;
+
+    requireParams.body &&
+      Object.keys(requireParams.body).forEach((param) => {
+        const resp = this.validateParams(
+          request,
+          requireParams.body as RequestProps,
+          param,
+        );
+
+        if (resp.isLeft()) return resp;
+      });
+
+    requireParams.params &&
+      Object.keys(requireParams.params).forEach((param) => {
+        const resp = this.validateParams(
+          request,
+          requireParams.params as RequestProps,
+          param,
+        );
+
+        if (resp.isLeft()) return resp;
+      });
+
+    requireParams.query &&
+      Object.keys(requireParams.query).forEach((param) => {
+        const resp = this.validateParams(
+          request,
+          requireParams.query as RequestProps,
+          param,
+        );
+
+        if (resp.isLeft()) return resp;
+      });
+
+    requireParams.headers &&
+      Object.keys(requireParams.headers).forEach((param) => {
+        const resp = this.validateParams(
+          request,
+          requireParams.headers as RequestProps,
+          param,
+        );
+
+        if (resp.isLeft()) return resp;
+      });
+
+    return right(new SuccessfulResponse('Params validated'));
+  }
+
+  private extraParams(
+    request: HttpRequestInterface,
+    requireParams: HttpParamsInterface,
+    extra_params: boolean,
+  ): Either<BadRequestError, SuccessfulResponse<string>> {
+    if (extra_params) return right(new SuccessfulResponse('Extra params allowed'));
+
+    const bodyExtraParams = Object.keys(request.body).filter(
+      (param) => !Object.keys(requireParams.body as RequestProps).includes(param),
+    );
+
+    const paramsExtraParams = Object.keys(request.params).filter(
+      (param) => !Object.keys(requireParams.params as RequestProps).includes(param),
+    );
+
+    const queryExtraParams = Object.keys(request.query).filter(
+      (param) => !Object.keys(requireParams.query as RequestProps).includes(param),
+    );
+
+    let errorMessage = ``;
+
+    if (bodyExtraParams.length > 0)
+      errorMessage += `Extra params in body: ${bodyExtraParams.join(', ')} \n`;
+    if (paramsExtraParams.length > 0)
+      errorMessage += `Extra params in params: ${paramsExtraParams.join(', ')} \n`;
+    if (queryExtraParams.length > 0)
+      errorMessage += `Extra params in query: ${queryExtraParams.join(', ')} \n`;
+
+    return left(new BadRequestError(errorMessage));
+  }
+
+  private validateParams(
+    request: HttpRequestInterface,
+    requestValidation: RequestProps,
+    param: string,
+  ): Either<BadRequestError | MissingRequestError, SuccessfulResponse<string>> {
+    const { required = true, type, valid, label } = requestValidation?.[param];
+
+    const paramName = label || param;
+
+    if (requestValidation?.[param].default) {
       if (!Object.keys(request.body).includes(param)) {
-        missingParams.push(param);
+        request.body[param] = requestValidation?.[param].default;
       }
-    });
+    }
 
-    requireParams.params?.forEach((param) => {
-      if (!Object.keys(request.params).includes(param)) {
-        missingParams.push(param);
+    if (required) {
+      if (!Object.keys(request.body).includes(param)) {
+        left(
+          new MissingRequestError(`Missing param ${paramName}, ${paramName} is required`),
+        );
       }
-    });
+    }
 
-    requireParams.query?.forEach((param) => {
-      if (!Object.keys(request.query).includes(param)) {
-        missingParams.push(param);
+    if (type) {
+      if (typeof request.body[param] !== requestValidation?.[param].type) {
+        left(
+          new BadRequestError(
+            `Invalid type for ${paramName}, ${paramName} must be ${type}`,
+          ),
+        );
       }
-    });
+    }
 
-    requireParams.headers?.forEach((param) => {
-      if (!Object.keys(request.headers).includes(param)) {
-        missingParams.push(param);
+    if (valid) {
+      if (!requestValidation?.[param].valid?.includes(request.body[param])) {
+        left(
+          new BadRequestError(
+            `Invalid value for ${paramName}, ${paramName} must be ${valid.join(', ')}`,
+          ),
+        );
       }
-    });
-
-    if (missingParams.length > 0) {
-      return left(new MissingRequestError(`Missing params: ${missingParams}`));
     }
 
     return right(new SuccessfulResponse('Params validated'));
