@@ -1,8 +1,9 @@
 import { Either, left, right } from '@shared/either';
 import { UserRepositoryInterface } from '../repositories/userRepository.interface';
-import { AppError, NotFoundError } from '@shared/errors';
+import { AppError, NotFoundError, UnauthorizedError } from '@shared/errors';
 
 import { UserMap, UserWebInterface } from '@main/maps/UserMap';
+import { userTypes } from '@configs/user';
 
 interface GetRequestInterface {
   user_id: string;

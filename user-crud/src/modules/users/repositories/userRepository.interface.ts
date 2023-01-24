@@ -13,8 +13,18 @@ export interface CreateUserInterface {
   type: string;
 }
 
+export interface UpdateUserInterface extends Partial<User> {
+  version: number;
+}
+
 export interface UserRepositoryInterface extends RepositoryInterface<User> {
   create(
     item: CreateUserInterface,
   ): Promise<Either<AppError, SuccessfulResponse<CreateUserInterface>>>;
+
+  update(
+    id: string,
+    item: Partial<User>,
+    retry?: number,
+  ): Promise<Either<AppError, SuccessfulResponse<UpdateUserInterface>>>;
 }

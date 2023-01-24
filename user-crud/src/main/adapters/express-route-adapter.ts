@@ -11,7 +11,17 @@ export const adaptRoute = (controller: WebControllerInterface) => {
       params: request.params,
       query: request.query,
       headers: request.headers,
+      user: request.user,
     };
+
+    const validateRequest = controller.validateRequest(
+      httpRequest,
+      controller.validation(),
+    );
+
+    if (validateRequest.isLeft()) {
+      throw validateRequest.value;
+    }
 
     const httpResponse = await controller.handle(httpRequest);
 

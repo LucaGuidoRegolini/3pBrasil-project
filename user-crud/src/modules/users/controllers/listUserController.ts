@@ -20,10 +20,6 @@ export class ListUserController extends WebController {
   public async handle(
     request: HttpRequestInterface,
   ): Promise<Either<AppError, HttpResponseInterface>> {
-    const validation = this.validateRequest(request, this.validation());
-
-    if (validation.isLeft()) return left(validation.value);
-
     const { page, limit, email, name } = request.query;
 
     const resp = await this.listUserService.execute({
@@ -40,7 +36,7 @@ export class ListUserController extends WebController {
     return right(HttpResponse.ok(resp.value));
   }
 
-  private validation(): HttpParamsInterface {
+  public validation(): HttpParamsInterface {
     return {
       extra_params: false,
       query: {

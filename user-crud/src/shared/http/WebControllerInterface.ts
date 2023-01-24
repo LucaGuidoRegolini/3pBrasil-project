@@ -1,3 +1,4 @@
+import { user_valid_types } from '@configs/user';
 import { Either, SuccessfulResponse } from '@shared/either';
 import { AppError } from '@shared/errors';
 
@@ -6,6 +7,11 @@ export interface HttpRequestInterface {
   params?: any;
   query?: any;
   headers?: any;
+  user?: {
+    id: string;
+    email: string;
+    type: user_valid_types;
+  };
 }
 
 export interface HttpResponseInterface {
@@ -37,8 +43,15 @@ export interface HttpParamsInterface {
 export interface WebControllerInterface {
   handle(request: HttpRequestInterface): Promise<Either<AppError, HttpResponseInterface>>;
 
+  /**
+   * @param request  Request object
+   * @param requireParams  Object with the required params
+   * @param extra_params  Boolean to allow extra params
+   */
   validateRequest(
     request: HttpRequestInterface,
     requireParams: HttpParamsInterface,
   ): Either<AppError, SuccessfulResponse<string>>;
+
+  validation(): HttpParamsInterface;
 }

@@ -8,29 +8,23 @@ import {
 } from '@shared/http/WebControllerInterface';
 import { HttpResponse } from '@shared/http/httpResponse';
 import { ListUserService } from '../services/ListUserService';
+import { GetUserService } from '../services/GetUserService';
 
 export class GetUserController extends WebController {
-  private listUserService: ListUserService;
+  private getUserService: GetUserService;
 
-  constructor(listUserService: ListUserService) {
+  constructor(getUserService: GetUserService) {
     super();
-    this.listUserService = listUserService;
+    this.getUserService = getUserService;
   }
 
   public async handle(
     request: HttpRequestInterface,
   ): Promise<Either<AppError, HttpResponseInterface>> {
-    const validation = this.validateRequest(request, this.validation());
-
-    if (validation.isLeft()) return left(validation.value);
-
     const { id } = request.params;
 
-    const resp = await this.listUserService.execute({
-      page,
-      limit,
-      email,
-      name,
+    const resp = await this.getUserService.execute({
+      user_id: id,
     });
 
     if (resp.isLeft()) {
@@ -40,7 +34,7 @@ export class GetUserController extends WebController {
     return right(HttpResponse.ok(resp.value));
   }
 
-  private validation(): HttpParamsInterface {
+  public validation(): HttpParamsInterface {
     return {
       extra_params: false,
       params: {

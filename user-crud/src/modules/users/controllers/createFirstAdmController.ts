@@ -21,10 +21,6 @@ export class CreateFirstAdmController extends WebController {
   public async handle(
     request: HttpRequestInterface,
   ): Promise<Either<AppError, HttpResponseInterface>> {
-    const validation = this.validateRequest(request, this.validation());
-
-    if (validation.isLeft()) return left(validation.value);
-
     const { name, email, password, cpf, phone } = request.body;
 
     const resp = await this.createFirstAdmService.execute({
@@ -42,7 +38,7 @@ export class CreateFirstAdmController extends WebController {
     return right(HttpResponse.created(resp.value));
   }
 
-  private validation(): HttpParamsInterface {
+  public validation(): HttpParamsInterface {
     return {
       extra_params: false,
       body: {

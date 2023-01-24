@@ -26,6 +26,8 @@ export class HttpLogger {
       Logger.error(`Error: ${req.method} - ${req.path} | error ${err.message}}`);
     } else {
       Logger.error(`Error: ${req.method} - ${req.path} | error ${err}`);
+
+      Logger.throwError(err);
     }
 
     return res.status(err.statusCode).json({
@@ -57,6 +59,8 @@ export class HttpLogger {
       Logger.error(`Error: ${req.method} - ${req.path} | error ${err.message}}`);
     } else {
       Logger.error(`Error: ${req.method} - ${req.path} | error ${err}`);
+
+      Logger.throwError(err);
     }
 
     res.status(500).json({

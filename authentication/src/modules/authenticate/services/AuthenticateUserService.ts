@@ -2,6 +2,7 @@ import { Either, left, right } from '@shared/either';
 import { UserRepositoryInterface } from '../repositories/userRepository.interface';
 import { NotFoundError, UnauthorizedError } from '@shared/errors';
 import { HashGeneration } from '@shared/hashGeneration/hashGeneration';
+import { tokenPropsInterface } from '@configs/auth';
 
 interface AuthenticateRequestInterface {
   email: string;
@@ -43,7 +44,7 @@ export class AuthenticationService {
       return left(new UnauthorizedError('User not found'));
     }
 
-    const tokenData = {
+    const tokenData: tokenPropsInterface = {
       id: user.id,
       email: user.email,
       type: user.type,

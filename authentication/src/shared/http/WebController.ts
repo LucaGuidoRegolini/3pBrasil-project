@@ -88,17 +88,23 @@ export abstract class WebController implements WebControllerInterface {
   ): Either<BadRequestError, SuccessfulResponse> {
     if (extra_params) return right(new SuccessfulResponse('Extra params allowed'));
 
-    const bodyExtraParams = Object.keys(request.body).filter(
-      (param) => !Object.keys(requireParams.body as RequestProps).includes(param),
-    );
+    const bodyExtraParams = request.body
+      ? Object.keys(request.body).filter(
+          (param) => !Object.keys(requireParams.body as RequestProps).includes(param),
+        )
+      : [];
 
-    const paramsExtraParams = Object.keys(request.params).filter(
-      (param) => !Object.keys(requireParams.params as RequestProps).includes(param),
-    );
+    const paramsExtraParams = request.params
+      ? Object.keys(request.params).filter(
+          (param) => !Object.keys(requireParams.params as RequestProps).includes(param),
+        )
+      : [];
 
-    const queryExtraParams = Object.keys(request.query).filter(
-      (param) => !Object.keys(requireParams.query as RequestProps).includes(param),
-    );
+    const queryExtraParams = request.query
+      ? Object.keys(request.query).filter(
+          (param) => !Object.keys(requireParams.query as RequestProps).includes(param),
+        )
+      : [];
 
     let errorMessage = ``;
 
@@ -108,6 +114,8 @@ export abstract class WebController implements WebControllerInterface {
       errorMessage += `Extra params in params: ${paramsExtraParams.join(', ')} \n`;
     if (queryExtraParams.length > 0)
       errorMessage += `Extra params in query: ${queryExtraParams.join(', ')} \n`;
+
+    if (errorMessage === '') return right(new SuccessfulResponse('Extra params allowed'));
 
     return left(new BadRequestError(errorMessage));
   }

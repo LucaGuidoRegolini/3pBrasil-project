@@ -23,4 +23,8 @@ export class Logger {
   public static error(message: string): void {
     this.logger.error(message);
   }
+
+  public static throwError(message: any): void {
+    this.logger.error(message);
+  }
 }

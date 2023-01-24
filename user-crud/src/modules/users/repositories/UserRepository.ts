@@ -1,5 +1,9 @@
 import { getRepository, Repository } from 'typeorm';
-import { CreateUserInterface, UserRepositoryInterface } from './userRepository.interface';
+import {
+  CreateUserInterface,
+  UpdateUserInterface,
+  UserRepositoryInterface,
+} from './userRepository.interface';
 import { User } from '../entities/user';
 import { Either, SuccessfulResponse, left, right } from '@shared/either';
 import { AppError, ConcurrencyError, InternalServerError } from '@shared/errors';
@@ -44,7 +48,10 @@ export class UserRepository implements UserRepositoryInterface {
     item: Partial<User>,
     retry = 0,
   ): Promise<
-    Either<InternalServerError | ConcurrencyError, SuccessfulResponse<Partial<User>>>
+    Either<
+      InternalServerError | ConcurrencyError,
+      SuccessfulResponse<UpdateUserInterface>
+    >
   > {
     try {
       const resp = await this.ormRepository.findOne(id);
@@ -70,7 +77,12 @@ export class UserRepository implements UserRepositoryInterface {
         return left(new ConcurrencyError('Concurrency Error'));
       }
 
-      return right(new SuccessfulResponse(item));
+      return right(
+        new SuccessfulResponse({
+          ...item,
+          version: user.raw[0].version,
+        }),
+      );
     } catch (error: any) {
       const message = error?.message || 'Internal Server Error';
       return left(new InternalServerError(message));
@@ -138,16 +150,17 @@ export class UserRepository implements UserRepositoryInterface {
 
       const orderType = order === 'descending' ? 'DESC' : 'ASC';
 
-      const query = this.ormRepository
-        .createQueryBuilder()
-        .orderBy(`user.${orderBy}`, orderType);
+      const query = this.ormRepository.createQueryBuilder();
+
+      if (orderBy) query.orderBy(`${orderBy}`, orderType);
 
       if (filter) {
         Object.keys(filter).forEach((key) => {
-          query.andWhere(`user.${key} LIKE %:value%`, { value: filter[key] });
+          filter[key]
+            ? query.andWhere(`${key} LIKE :value`, { value: `%${filter[key]}%` })
+            : null;
         });
       }
-
       const cloneQuery = query.clone();
 
       query.skip((page - 1) * limit).take(limit);
